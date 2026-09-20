@@ -3,6 +3,12 @@
 import { FormEvent, useMemo, useState } from "react";
 
 type Platform = "epic" | "xbl" | "psn" | "account";
+type Stat = { value?: number; displayValue?: string };
+type Result = {
+  account?: { name?: string; id?: string };
+  battlePass?: { level?: number; progress?: number };
+  stats?: { all?: { overall?: Record<string, Stat> } };
+};
 
 const platforms: Array<{ id: Platform; label: string; short: string }> = [
   { id: "epic", label: "Epic Games", short: "EP" },
@@ -18,19 +24,15 @@ const placeholders: Record<Platform, string> = {
   account: "Enter an Epic account ID",
 };
 
-function trackerUrl(platform: Platform, rawQuery: string) {
-  const query = rawQuery.trim();
-  const lookup = platform === "epic" || platform === "account" ? query : `${platform}(${query})`;
-  return `https://fortnitetracker.com/profile/all/${encodeURIComponent(lookup)}`;
-}
-
 export default function Home() {
   const [platform, setPlatform] = useState<Platform>("epic");
   const [query, setQuery] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState<Result | null>(null);
   const selected = useMemo(() => platforms.find((item) => item.id === platform)!, [platform]);
 
-  function submit(event: FormEvent<HTMLFormElement>) {
+  async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const clean = query.trim();
     if (!clean) {
@@ -42,7 +44,18 @@ export default function Home() {
       return;
     }
     setError("");
-    window.open(trackerUrl(platform, clean), "_blank", "noopener,noreferrer");
+    setResult(null);
+    setLoading(true);
+    try {
+      const response = await fetch(`/api/lookup?q=${encodeURIComponent(clean)}&platform=${platform}`);
+      const payload = await response.json();
+      if (!response.ok) throw new Error(payload.error || "Search failed.");
+      setResult(payload.data);
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : "Search failed.");
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -99,14 +112,16 @@ export default function Home() {
                   maxLength={64}
                   aria-describedby={error ? "search-error" : "search-help"}
                 />
-                <button className="submit" type="submit">Search player <b>↗</b></button>
+                <button className="submit" type="submit" disabled={loading}>{loading ? "Searching…" : "Search player"} <b>→</b></button>
               </div>
-              {error ? <p className="error" id="search-error">{error}</p> : <p className="help" id="search-help">A new tab will open with the matching Fortnite Tracker profile.</p>}
+              {error ? <p className="error" id="search-error">{error}</p> : <p className="help" id="search-help">The player&apos;s public stats will appear below without leaving this site.</p>}
             </form>
+
+            {result && <PlayerResult result={result} />}
 
             <div className="example">
               <div className="exampleIcon">i</div>
-              <p><strong>Console lookup supported</strong><br />Xbox and PlayStation searches use Tracker Network&apos;s platform-specific profile format.</p>
+              <p><strong>Console lookup supported</strong><br />Xbox and PlayStation names are resolved through the selected account type.</p>
             </div>
           </div>
         </div>
@@ -117,5 +132,30 @@ export default function Home() {
         </footer>
       </section>
     </main>
+  );
+}
+
+function PlayerResult({ result }: { result: Result }) {
+  const overall = result.stats?.all?.overall ?? {};
+  const cards = [
+    ["Wins", overall.wins],
+    ["Matches", overall.matches],
+    ["K/D", overall.kd],
+    ["Win rate", overall.winRate],
+    ["Kills", overall.kills],
+    ["Minutes", overall.minutesPlayed],
+  ] as const;
+
+  return (
+    <section className="result" aria-live="polite">
+      <div className="resultHead">
+        <div><span>PLAYER FOUND</span><h3>{result.account?.name ?? "Fortnite player"}</h3></div>
+        {result.battlePass?.level != null && <div className="level"><span>LEVEL</span><b>{result.battlePass.level}</b></div>}
+      </div>
+      <div className="statGrid">
+        {cards.map(([label, stat]) => <div className="stat" key={label}><span>{label}</span><strong>{stat?.displayValue ?? stat?.value ?? "—"}</strong></div>)}
+      </div>
+      {result.account?.id && <p className="accountId">Account ID: {result.account.id}</p>}
+    </section>
   );
 }
