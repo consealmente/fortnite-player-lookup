@@ -62,6 +62,7 @@ input:focus { border-color: var(--red); box-shadow: inset 3px 0 var(--red); }
 input::placeholder { color: #656771; }
 .submit { border: 0; background: var(--red); color: white; padding: 0 20px; font-weight: 900; text-transform: uppercase; font-size: .75rem; letter-spacing: .06em; }
 .submit:hover { background: #ff5368; }
+.submit:disabled { cursor: wait; opacity: .72; }
 .submit b { font-size: 1rem; margin-left: 5px; }
 .help, .error { min-height: 20px; margin: 9px 0 0; font-size: .76rem; }
 .help { color: #777983; }
@@ -70,6 +71,17 @@ input::placeholder { color: #656771; }
 .exampleIcon { flex: 0 0 24px; width: 24px; height: 24px; border: 1px solid #5a5c66; display: grid; place-items: center; border-radius: 50%; font: 700 .78rem Georgia, serif; color: #bbbcc3; }
 .example p { margin: 0; color: #747681; font-size: .75rem; line-height: 1.5; }
 .example strong { color: #c9cad0; }
+.result { margin-top: 22px; border: 1px solid #363842; background: #090a0e; padding: 20px; }
+.resultHead { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 17px; }
+.resultHead span, .level span { color: var(--red); font-size: .66rem; letter-spacing: .13em; font-weight: 900; }
+.resultHead h3 { margin: 5px 0 0; font-size: 1.35rem; }
+.level { text-align: right; }
+.level b { display: block; font-size: 1.45rem; margin-top: 3px; }
+.statGrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.stat { border: 1px solid #252730; padding: 12px; background: #111217; }
+.stat span { display: block; color: #767984; font-size: .66rem; text-transform: uppercase; letter-spacing: .08em; margin-bottom: 6px; }
+.stat strong { font-size: 1.05rem; }
+.accountId { margin: 13px 0 0; color: #666974; font: .68rem monospace; overflow-wrap: anywhere; }
 footer { border-top: 1px solid var(--line); padding-top: 20px; color: #5f616a; font-size: .72rem; display: flex; justify-content: space-between; }
 
 @media (max-width: 850px) {
@@ -87,6 +99,7 @@ footer { border-top: 1px solid var(--line); padding-top: 20px; color: #5f616a; f
   .lookupCard { padding: 20px; }
   .provider { display: none; }
   .platforms { grid-template-columns: repeat(2, 1fr); }
+  .statGrid { grid-template-columns: repeat(2, 1fr); }
   .searchRow { grid-template-columns: 1fr; gap: 10px; }
   input { border-right: 1px solid #383a44; }
   .submit { min-height: 51px; }
