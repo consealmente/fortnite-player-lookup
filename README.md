@@ -1,6 +1,6 @@
 # Fortnite Player Lookup
 
-A small, Vercel-ready Next.js app that opens Fortnite Tracker profiles from an Epic display name, Xbox gamertag, PlayStation ID, or Epic account ID.
+A Vercel-ready Next.js app that displays public Fortnite player statistics from an Epic display name, Xbox gamertag, PlayStation ID, or Epic account ID.
 
 ## Run locally
 
@@ -17,15 +17,12 @@ Open `http://localhost:3000`.
 2. In Vercel, choose **Add New → Project** and import the repository.
 3. Keep the detected framework as **Next.js** and select **Deploy**.
 
-No environment variables are required.
+Add this environment variable in Vercel before deploying:
 
-## How lookup works
+```text
+FORTNITE_API_KEY=your_key_from_dash.fortnite-api.com
+```
 
-The app creates the official Fortnite Tracker profile URL for the selected identity type and opens it in a new browser tab:
+## Data provider
 
-- Epic: `/profile/all/{username}`
-- Xbox: `/profile/all/xbl({gamertag})`
-- PlayStation: `/profile/all/psn({username})`
-- Account ID: `/profile/all/{accountId}`
-
-This version does not scrape Tracker Network or use undocumented private APIs.
+The backend calls Fortnite-API's documented BR Stats endpoint. API credentials stay on the server and are never sent to the browser. The provider supports `epic`, `xbl`, and `psn` account types plus direct Epic account IDs.
